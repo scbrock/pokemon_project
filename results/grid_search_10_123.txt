@@ -1,0 +1,80 @@
+params 0
+{'model_type': 'dqn_agent', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.5, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': True, 'enable_double_dqn__': False, 'dueling_type__': 'max'}
+trial 0
+Results against random player:
+DQN Evaluation: 286 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 207 victories out of 300 episodes
+trial 1
+Results against random player:
+DQN Evaluation: 279 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 202 victories out of 300 episodes
+trial 2
+Results against random player:
+DQN Evaluation: 284 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 224 victories out of 300 episodes
+params 1
+{'model_type': 'dqn_agent', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.5, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': False, 'enable_double_dqn__': True, 'dueling_type__': 'avg'}
+trial 0
+Results against random player:
+DQN Evaluation: 285 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 228 victories out of 300 episodes
+trial 1
+Results against random player:
+DQN Evaluation: 287 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 207 victories out of 300 episodes
+trial 2
+Results against random player:
+DQN Evaluation: 288 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 211 victories out of 300 episodes
+params 2
+{'model_type': 'dqn_agent', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.7, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': False, 'enable_double_dqn__': True, 'dueling_type__': 'avg'}
+trial 0
+Results against random player:
+DQN Evaluation: 287 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 219 victories out of 300 episodes
+trial 1
+Results against random player:
+DQN Evaluation: 283 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 230 victories out of 300 episodes
+trial 2
+Results against random player:
+DQN Evaluation: 288 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 205 victories out of 300 episodes
+params 3
+{'model_type': 'dqn_agent', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.9, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': False, 'enable_double_dqn__': True, 'dueling_type__': 'avg'}
+trial 0
+Results against random player:
+DQN Evaluation: 290 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 214 victories out of 300 episodes
+trial 1
+Results against random player:
+DQN Evaluation: 284 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 215 victories out of 300 episodes
+trial 2
+Results against random player:
+DQN Evaluation: 291 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 211 victories out of 300 episodes

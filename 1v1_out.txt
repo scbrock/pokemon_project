@@ -1,0 +1,6 @@
+params 0
+{'model_type': 'dqn_agent', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.5, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': False, 'enable_double_dqn__': True, 'dueling_type__': 'avg'}
+trial 0
+Training for 10000 steps ...
+'property' object is not iterable
+ERROR in test() iteration, going to next set of params

@@ -1,0 +1,7 @@
+params 0
+{'model_type': 'other', 'l1_out': 128, 'l2_out': 64, 'gamma': 0.5, 'target_model_update': 1, 'delta_clip': 0.01, 'nb_steps_warmup': 1000, 'enable_dueling_dqn__': False, 'enable_double_dqn__': True, 'dueling_type__': 'avg'}
+Results against random player:
+DQN Evaluation: 164 victories out of 300 episodes
+
+Results against max player:
+DQN Evaluation: 40 victories out of 300 episodes
