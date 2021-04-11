@@ -712,18 +712,18 @@ def main(params=None):
         env_algorithm_kwargs={"dqn": dqn, "nb_episodes": NB_EVALUATION_EPISODES},
     )
 
-    print("\nLoaded results against Random:")
-    env_player.play_against(
-        env_algorithm=dqn_evaluation,
-        opponent=opponent,
-        env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
-    )
-    print("\nLoaded results against Max Damage:")
-    env_player.play_against(
-        env_algorithm=dqn_evaluation,
-        opponent=second_opponent,
-        env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
-    )
+    # print("\nLoaded results against Random:")
+    # env_player.play_against(
+    #     env_algorithm=dqn_evaluation,
+    #     opponent=opponent,
+    #     env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
+    # )
+    # print("\nLoaded results against Max Damage:")
+    # env_player.play_against(
+    #     env_algorithm=dqn_evaluation,
+    #     opponent=second_opponent,
+    #     env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
+    # )
 
     return model
 
