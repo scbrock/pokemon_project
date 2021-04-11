@@ -656,46 +656,7 @@ def main(params=None):
     name = params["name"] + "_model"
     model.save(name)
 
-    loaded_model = tf.keras.models.load_model(name)
-
-
-
-    # with open('my_model.pkl', 'wb') as f:
-    #     pickle.dump(model, f)
-
-    with open('my_policy.pkl', 'wb') as f:
-        pickle.dump(policy, f)
-
-    with open('my_memory.pkl', 'wb') as f:
-        pickle.dump(memory, f)
-
-    # loaded_model = pickle.load(open("my_model.pkl", 'rb'))
-    loaded_policy = pickle.load(open("my_policy.pkl", 'rb'))
-    loaded_memory = pickle.load(open("my_memory.pkl", 'rb'))
-
-    dqn2 = DQNAgent(
-        model=loaded_model,
-        nb_actions=len(env_player.action_space),
-        policy=loaded_policy,
-        memory=loaded_memory,
-        nb_steps_warmup=params['nb_steps_warmup'],
-        gamma=params['gamma'],
-        target_model_update=params['target_model_update'],
-        # delta_clip=0.01,
-        delta_clip=params['delta_clip'],
-        enable_double_dqn=params['enable_double_dqn__'],
-        enable_dueling_network=params['enable_double_dqn__'],
-        dueling_type=params['dueling_type__']
-    )
-    dqn2.compile(Adam(lr=0.00025), metrics=["mae"])
-
-    #
-    # loaded_model = pickle.load(open("model.pkl", 'rb'))
-
-    # for w1, w2 in zip(model.get_weights(), model2.get_weights()):
-    #     tf.debugging.assert_equal(w1, w2)
-
-    # print('all equal')
+    # loaded_model = tf.keras.models.load_model(name)
 
     # Evaluation
     print("Results against random player:")
@@ -712,18 +673,7 @@ def main(params=None):
         env_algorithm_kwargs={"dqn": dqn, "nb_episodes": NB_EVALUATION_EPISODES},
     )
 
-    # print("\nLoaded results against Random:")
-    # env_player.play_against(
-    #     env_algorithm=dqn_evaluation,
-    #     opponent=opponent,
-    #     env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
-    # )
-    # print("\nLoaded results against Max Damage:")
-    # env_player.play_against(
-    #     env_algorithm=dqn_evaluation,
-    #     opponent=second_opponent,
-    #     env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
-    # )
+
 
     return model
 
