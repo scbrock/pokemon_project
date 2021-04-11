@@ -14,32 +14,22 @@ from poke_env.server_configuration import ShowdownServerConfiguration
 from tensorflow.keras.models import load_model
 
 
+LOGIN_USERNAME = ''
+LOGIN_PASSWORD = ''
 
+# Unused for now - TrainedRLPlayer and SimpleRLPlayer represent model-dependent RL agents
 class TrainedRLPlayer(Player):
     def __init__(self, model, *args, **kwargs):
         Player.__init__(self, *args, **kwargs)
         self.model = model
 
     def choose_move(self, battle):
-        state = SimpleRLPlayer(player_configuration=PlayerConfiguration("mynameisgillian", "beanscool"),
+        state = SimpleRLPlayer(player_configuration=PlayerConfiguration(LOGIN_USERNAME, LOGIN_PASSWORD),
         server_configuration=ShowdownServerConfiguration).embed_battle(battle=battle)
         state = np.array(state).reshape((1,1,-1))
         predictions = self.model.predict([state])[0]
         action = np.argmax(predictions)
         return SimpleRLPlayer()._action_to_move(action, battle)
-
-
-# class MaxDamagePlayer(RandomPlayer):
-#     def choose_move(self, battle):
-#         # If the player can attack, it will
-#         if battle.available_moves:
-#             # Finds the best move among available ones
-#             best_move = max(battle.available_moves, key=lambda move: move.base_power)
-#             return self.create_order(best_move)
-#
-#         # If no attack is available, a random switch will be made
-#         else:
-#             return self.choose_random_move(battle)
       
 class SimpleRLPlayer(Gen8EnvSinglePlayer):
     def embed_battle(self, battle):
@@ -79,30 +69,30 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
             battle, fainted_value=2, hp_value=1, victory_value=30
         )
 
+# Class used for the rule-based Max Damage agent to play online
+class MaxDamagePlayer(RandomPlayer):
+    def choose_move(self, battle):
+        # If the player can attack, it will
+        if battle.available_moves:
+            # Finds the best move among available ones
+            best_move = max(battle.available_moves, key=lambda move: move.base_power)
+            return self.create_order(best_move)
+
+        # If no attack is available, a random switch will be made
+        else:
+            return self.choose_random_move(battle)
     
 async def main():
-    # We create a random player
     
-    # model = load_model('pokemon_project/model_25000')
-    model = load_model('model_25000')
-    
-    player = TrainedRLPlayer(model,
-        player_configuration=PlayerConfiguration("mynameisgillian", "beanscool"),
-        server_configuration=ShowdownServerConfiguration,
-    )
+    player = MaxDamagePlayer(player_configuration=PlayerConfiguration(LOGIN_USERNAME, LOGIN_PASSWORD),
+                             server_configuration=ShowdownServerConfiguration)
     
 
     # Sending challenges to 'your_username'
-    await player.send_challenges("UW_Brock", n_challenges=1)
+    # await player.send_challenges("UW_Brock", n_challenges=1)
 
-    # Accepting one challenge from any user
-    #await player.accept_challenges(None, 1)
-
-    # Accepting three challenges from 'your_username'
-    #await player.accept_challenges('your_username', 3)
-
-    # Playing 5 games on the ladder
-    # await player.ladder(5)
+    # Playing X games on the ladder
+    await player.ladder(40)
 
     # Print the rating of the player and its opponent after each battle
     for battle in player.battles.values():
