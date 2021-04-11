@@ -21,15 +21,6 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import model_from_json
 
 
-# graph = tf.compat.v1.get_default_graph()
-import sys
-
-# class DevNull:
-#     def write(self, msg):
-#         pass
-#
-# sys.stderr = DevNull()
-
 # adjustment
 import nest_asyncio
 nest_asyncio.apply()
@@ -38,7 +29,15 @@ nest_asyncio.apply()
 # We define our RL player
 # It needs a state embedder and a reward computer, hence these two methods
 class SimpleRLPlayer(Gen8EnvSinglePlayer):
+    '''
+    This is the class that will be used to train and evaluate models
+    '''
     def embed_battle(self, battle):
+        '''
+        Creating a vectorized embedding of the battle
+        :param battle: Pokemon Showdown battle object
+        :return: battle vector
+        '''
         # -1 indicates that the move does not have a base power
         # or is not available
         moves_base_power = -np.ones(4)
@@ -71,31 +70,33 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
         )
 
     def compute_reward(self, battle) -> float:
+        '''
+        Compute the reward associated with the battle instance
+        :param battle:  Pokemon Showdown battle object
+        :return: Reward (float)
+        '''
         return self.reward_computing_helper(
             battle, fainted_value=2, hp_value=1, victory_value=30
         )
 
-# class TrainedRLPlayer(Player):
-#     def __init__(self, model, *args, **kwargs):
-#         Player.__init__(self, *args, **kwargs)
-#         self.model = model
-#
-#     def choose_move(self, battle):
-#         # print('battle', battle)
-#         state = SimpleRLPlayer().embed_battle(battle=battle)
-#         state = np.array(state).reshape((1,1,-1))
-#         predictions = self.model.predict([state])[0]
-#         action = np.argmax(predictions)
-#         return SimpleRLPlayer()._action_to_move(action, battle)
+
 class TrainedRLPlayer(Player):
+    '''
+    Class used to use evaluate a model on a Pokemon Showdown server against humans
+    '''
     def __init__(self, model, *args, **kwargs):
         Player.__init__(self, *args, **kwargs)
         self.model = model
 
     def choose_move(self, battle):
+        '''
+        Determine the best move given the battle and model
+        :param battle: Pokemon Showdown battle object
+        :return: move (integer index)
+        '''
         state = SimpleRLPlayer(player_configuration=PlayerConfiguration("mynameisgillian", "beanscool"),
         server_configuration=ShowdownServerConfiguration).embed_battle(battle=battle)
-        state = np.array(state).reshape((1,1,-1))
+        state = np.array(state).reshape((1, 1, -1))
         predictions = self.model.predict([state])[0]
         action = np.argmax(predictions)
         return SimpleRLPlayer()._action_to_move(action, battle)
@@ -103,6 +104,11 @@ class TrainedRLPlayer(Player):
 
 class MaxDamagePlayer(RandomPlayer):
     def choose_move(self, battle):
+        '''
+        Provide the move that does the most damage
+        :param battle: Pokemon Showdown battle object
+        :return: move
+        '''
         # If the player can attack, it will
         if battle.available_moves:
             # Finds the best move among available ones
@@ -115,7 +121,15 @@ class MaxDamagePlayer(RandomPlayer):
 
 
 class RLPlayer(RandomPlayer):
+    '''
+    baseline player that selects moves at random
+    '''
     def choose_move(self, battle):
+        '''
+        Select a random legal move
+        :param battle: Pokemon Showdown battle object
+        :return: move
+        '''
         # If the player can attack, it will
         if battle.available_moves:
             # Finds the best move among available ones
@@ -127,6 +141,10 @@ class RLPlayer(RandomPlayer):
             return self.choose_random_move(battle)
 
 
+##################################################################
+#       Initialize global variables and set random seed
+##################################################################
+
 NB_TRAINING_STEPS = 5000
 NB_EVALUATION_EPISODES = 100
 
@@ -136,6 +154,14 @@ np.random.seed(0)
 
 # This is the function that will be used to train the dqn
 def dqn_training(player, dqn, nb_steps):
+    '''
+    Performs training on dqn against player
+
+    :param player: Opponent player
+    :param dqn: Model to train
+    :param nb_steps: Number of steps of training
+    :return: None
+    '''
     dqn.fit(player, nb_steps=nb_steps, verbose=2)
     player.complete_current_battle()
     print(
@@ -145,6 +171,13 @@ def dqn_training(player, dqn, nb_steps):
 
 
 def dqn_evaluation(player, dqn, nb_episodes):
+    '''
+    Evaluate dqn against player for nb_episodes
+    :param player: opponent
+    :param dqn: model to evaluate
+    :param nb_episodes: number of episodes
+    :return: None
+    '''
     # Reset battle statistics
     player.reset_battles()
     dqn.test(player, nb_episodes=nb_episodes, visualize=False, verbose=False)
@@ -156,6 +189,15 @@ def dqn_evaluation(player, dqn, nb_episodes):
 
 
 def test():
+    '''
+    test a set of parameters on a local Pokemon Showdown server
+    :return: model
+    '''
+
+
+    ##########################################################################
+    #       Define different hyper-parameter sets to train + evaluate
+    ##########################################################################
 
     # fine-tune gamma
     params1 = {
@@ -171,6 +213,7 @@ def test():
         'enable_double_dqn__': True,
         'dueling_type__': 'avg',  # one of 'avg', 'max', 'naive'
     }
+    # gamma = 0.7
     params2 = {
         'name': 'params2',
         'model_type': 'dqn_agent',  # 'dqn_agent', 'sarsa_agent', 'other'
@@ -184,6 +227,7 @@ def test():
         'enable_double_dqn__': True,
         'dueling_type__': 'avg',  # one of 'avg', 'max', 'naive'
     }
+    # gamma = 0.9
     params3 = {
         'name': 'params3',
         'model_type': 'dqn_agent',  # 'dqn_agent', 'sarsa_agent', 'other'
@@ -297,7 +341,7 @@ def test():
         'delta_clip': 0.01,
         'nb_steps_warmup': 1000,
         'enable_dueling_dqn__': True,
-        'enable_double_dqn__': True,
+        'enable_double_dqn__': False,
         'dueling_type__': 'avg',  # one of 'avg', 'max', 'naive'
     }
     # dueling max
@@ -329,6 +373,7 @@ def test():
         'enable_double_dqn__': True,
         'dueling_type__': "naive" # one of 'avg', 'max', 'naive'
     }
+    # 3 hidden layer architecture
     params13 = {
         'name': 'params13',
         'model_type': 'dqn_agent',  # 'dqn_agent', 'sarsa_agent', 'other'
@@ -344,14 +389,16 @@ def test():
         'dueling_type__': 'avg',  # one of 'avg', 'max', 'naive'
     }
 
+    # define the grid to train and evaluate
     grid = [#params1, params2, params3, params4,
             #params5, params6, params7, params8,
             params9, params10, params11, params12,
             params13]
-    # grid = [params1]
+    grid = [params1]
 
     n_trials = 1
 
+    # iterate through parameter sets
     for i, params in enumerate(grid):
         print("params {}".format(i))
         print(params)
@@ -360,6 +407,7 @@ def test():
             try:
                 main(params)
             except Exception as e:
+                # if failed, continue with next parameter set
                 print(e)
                 print('ERROR in test() iteration, going to next set of params')
 
@@ -367,9 +415,10 @@ def get_model(params=None):
     """
 
     :param params:
-        - 'l1_out'
-        - 'l2_out'
-        - 'n_actions'
+        - 'l1_out' - layer 1 output size
+        - 'l2_out' - layer 2 output size
+        - 'l3_out' - layer 3 output size
+        - 'n_actions' - number of actions
 
     :return:
     model - keras sequential model
@@ -403,6 +452,12 @@ def get_model(params=None):
 
 
 async def main_ladder(model):
+    '''
+    Evaluate model on ladder
+
+    :param model: model to evaluate
+    :return: None
+    '''
     # We create a random player
 
     # model = load_model('pokemon_project/model_25000')
@@ -432,9 +487,8 @@ async def main_ladder(model):
 
 def main(params=None):
     """
-    main function
-    :return:
-    None
+    performs training and evaluation of params
+    :return: model
     """
     if params is None:
         params = {
@@ -495,7 +549,7 @@ def main(params=None):
     else:
         memory = EpisodeParameterMemory(limit=10000, window_length=1)
 
-    # Ssimple epsilon greedy
+    # Simple epsilon greedy
     # What is linear annealed policy?
     # - this policy gives gradually decreasing thresholds for the epsilon greedy policy
     # - it acts as a wrapper around epsilon greedy to feed in a custom threshold
@@ -518,21 +572,11 @@ def main(params=None):
     #     value_test=0,
     #     nb_steps=pol_steps,
     # )
-    # policy = policy_boltz
+    policy = policy_boltz
 
     # Defining our DQN
     # model = tf.keras.models.load_model('dqn_v_dqn')
-    # print('second model summary')
-    # print(model.summary())
 
-    # load json and create model
-    # json_file = open('dqn_alt_10k.json', 'r')
-    # loaded_model_json = json_file.read()
-    # json_file.close()
-    # model = model_from_json(loaded_model_json)
-    # # load weights into new model
-    # model.load_weights("dqn_alt_10k.h5")
-    # print("Loaded model from disk")
 
     if params['model_type'] == 'dqn_agent':
         dqn = DQNAgent(
@@ -597,9 +641,6 @@ def main(params=None):
     rounds = 4
     n_steps = NB_TRAINING_STEPS // rounds
 
-    # practice pickleing model
-    # pickle.dumps(model)
-
     for k in range(rounds):
         env_player.play_against(
             env_algorithm=dqn_training,
@@ -612,41 +653,49 @@ def main(params=None):
             env_algorithm_kwargs={"dqn": dqn, "nb_steps": n_steps},
         )
 
+    name = params["name"] + "_model"
+    model.save(name)
+
+    loaded_model = tf.keras.models.load_model(name)
 
 
 
-
-        # pickle model
-
-        # update opponent
-        # rl_opponent = TrainedRLPlayer(model)
-        # env_player.play_against(
-        #     env_algorithm=dqn_training,
-        #     opponent=second_opponent,
-        #     env_algorithm_kwargs={"dqn": dqn, "nb_steps": n_steps},
-        # )
-    #
-    #
-    #     # save model with h5 and json
-    #     model_json = model.to_json()
-    #     with open("dqn_alt_10k.json", "w") as json_file:
-    #         json_file.write(model_json)
-    #     # serialize weights to HDF5
-    #     model.save_weights("dqn_alt_10k.h5")
-    #     print("Saved model to disk")
-
-        # model.save("dqn_new_%d" % NB_TRAINING_STEPS * (k + 1))
-    model.save(params["name"] + "_model" + "_ladder")
-
-
-
-    # with open('model.pkl', 'wb') as f:
+    # with open('my_model.pkl', 'wb') as f:
     #     pickle.dump(model, f)
+
+    with open('my_policy.pkl', 'wb') as f:
+        pickle.dump(policy, f)
+
+    with open('my_memory.pkl', 'wb') as f:
+        pickle.dump(memory, f)
+
+    # loaded_model = pickle.load(open("my_model.pkl", 'rb'))
+    loaded_policy = pickle.load(open("my_policy.pkl", 'rb'))
+    loaded_memory = pickle.load(open("my_memory.pkl", 'rb'))
+
+    dqn2 = DQNAgent(
+        model=loaded_model,
+        nb_actions=len(env_player.action_space),
+        policy=loaded_policy,
+        memory=loaded_memory,
+        nb_steps_warmup=params['nb_steps_warmup'],
+        gamma=params['gamma'],
+        target_model_update=params['target_model_update'],
+        # delta_clip=0.01,
+        delta_clip=params['delta_clip'],
+        enable_double_dqn=params['enable_double_dqn__'],
+        enable_dueling_network=params['enable_double_dqn__'],
+        dueling_type=params['dueling_type__']
+    )
+    dqn2.compile(Adam(lr=0.00025), metrics=["mae"])
+
     #
     # loaded_model = pickle.load(open("model.pkl", 'rb'))
 
-    # for w1, w2 in zip(model.get_weights(), loaded_model.get_weights()):
+    # for w1, w2 in zip(model.get_weights(), model2.get_weights()):
     #     tf.debugging.assert_equal(w1, w2)
+
+    # print('all equal')
 
     # Evaluation
     print("Results against random player:")
@@ -662,6 +711,20 @@ def main(params=None):
         opponent=second_opponent,
         env_algorithm_kwargs={"dqn": dqn, "nb_episodes": NB_EVALUATION_EPISODES},
     )
+
+    print("\nLoaded results against Random:")
+    env_player.play_against(
+        env_algorithm=dqn_evaluation,
+        opponent=opponent,
+        env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
+    )
+    print("\nLoaded results against Max Damage:")
+    env_player.play_against(
+        env_algorithm=dqn_evaluation,
+        opponent=second_opponent,
+        env_algorithm_kwargs={"dqn": dqn2, "nb_episodes": NB_EVALUATION_EPISODES},
+    )
+
     return model
 
 
@@ -672,94 +735,3 @@ def main(params=None):
 if __name__ == "__main__":
 
     test()
-    # model_type = 'other'
-    # env_player = SimpleRLPlayer(battle_format="gen8randombattle")
-    #
-    # opponent = RandomPlayer(battle_format="gen8randombattle")
-    # second_opponent = MaxDamagePlayer(battle_format="gen8randombattle")
-    #
-    # # Output dimension
-    # n_action = len(env_player.action_space)
-    #
-    # model = Sequential()
-    # model.add(Dense(128, activation="elu", input_shape=(1, 10)))
-    #
-    # # Our embedding have shape (1, 10), which affects our hidden layer
-    # # dimension and output dimension
-    # # Flattening resolve potential issues that would arise otherwise
-    # model.add(Flatten())
-    # model.add(Dense(64, activation="elu"))
-    # model.add(Dense(n_action, activation="linear"))
-    #
-    # # elu activation is similar to relu
-    # # https://ml-cheatsheet.readthedocs.io/en/latest/activation_functions.html#elu
-    #
-    # memory = SequentialMemory(limit=10000, window_length=1)
-    #
-    # # Ssimple epsilon greedy
-    # policy = LinearAnnealedPolicy(
-    #     EpsGreedyQPolicy(),
-    #     attr="eps",
-    #     value_max=1.0,
-    #     value_min=0.05,
-    #     value_test=0,
-    #     nb_steps=10000,
-    # )
-    #
-    # # Defining our DQN
-    # if model_type == 'dqn_agent':
-    #     dqn = DQNAgent(
-    #         model=model,
-    #         nb_actions=len(env_player.action_space),
-    #         policy=policy,
-    #         memory=memory,
-    #         nb_steps_warmup=1000,
-    #         gamma=0.5,
-    #         target_model_update=1,
-    #         delta_clip=0.01,
-    #         enable_double_dqn=True,
-    #     )
-    # elif model_type == 'sarsa_agent':
-    #     dqn = SARSAAgent(
-    #         model=model,
-    #         nb_actions=len(env_player.action_space),
-    #         policy=policy,
-    #         nb_steps_warmup=1000,
-    #         gamma=0.5,
-    #         delta_clip=0.01
-    #     )
-    # else:
-    #     # CEMAgent
-    #     dqn = CEMAgent(
-    #         model=model,
-    #         nb_actions=len(env_player.action_space),
-    #         memory=memory,
-    #         nb_steps_warmup=1000,
-    #         gamma=0.5,
-    #         delta_clip=0.01
-    #     )
-    #
-    # dqn.compile(Adam(lr=0.00025), metrics=["mae"])
-    #
-    # # Training
-    # env_player.play_against(
-    #     env_algorithm=dqn_training,
-    #     opponent=opponent,
-    #     env_algorithm_kwargs={"dqn": dqn, "nb_steps": NB_TRAINING_STEPS},
-    # )
-    # model.save("model_%d" % NB_TRAINING_STEPS)
-    #
-    # # Evaluation
-    # print("Results against random player:")
-    # env_player.play_against(
-    #     env_algorithm=dqn_evaluation,
-    #     opponent=opponent,
-    #     env_algorithm_kwargs={"dqn": dqn, "nb_episodes": NB_EVALUATION_EPISODES},
-    # )
-    #
-    # print("\nResults against max player:")
-    # env_player.play_against(
-    #     env_algorithm=dqn_evaluation,
-    #     opponent=second_opponent,
-    #     env_algorithm_kwargs={"dqn": dqn, "nb_episodes": NB_EVALUATION_EPISODES},
-    # )
