@@ -1,6 +1,6 @@
 # Reinforcement Learning in Pokémon Showdown
 
-<img src="poke_showdown_pic.png" alt="Logo" width="80" height="80">
+<img src="poke_showdown_pic.png" alt="Logo" width="840" height="480">
 
 # About Project
 This project is to train and test different `keras-rl` agents on Pokémon Showdown using `poke-env`. The main file used for training and testing is `rl_testing.py`.
