@@ -1,10 +1,23 @@
+'''
+This file is used to convert output from rl_testing.py into plots of the learning steps
+
+Note: this script may require manual editing depending on the format of the output and
+expects the output to be created by calling fit with verbose = 2
+
+'''
+
+
 import os
 import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-input_file = 'dqn_random'
+
+##########################################################################
+#       Import output file
+##########################################################################
+input_file = 'dqn_100k_eps_grdy'
 
 file1 = open(input_file + '.txt', 'r')
 lines = file1.read().split('\n')
@@ -14,6 +27,10 @@ parts = sample.split(',')
 
 record = dict()
 
+
+##########################################################################
+#       Create a dictionary of learning values after each step
+##########################################################################
 for sample in to_process:
     parts = sample.split(',')
     for i, p in enumerate(parts):
@@ -37,14 +54,16 @@ for sample in to_process:
 
         record[label] = record.get(label, []) + [val]
 
-# print('record[mean reward]', record['mean reward'][:5])
 
+##########################################################################
+#       Create graphs of the learning steps
+##########################################################################
 df = pd.DataFrame.from_dict(record)
 print(df.head())
 names = ['episode reward', 'mean reward', 'mean_q', 'mae']
 for i, col_name in enumerate(names):
     plt.figure(i)
-    plt.plot(df[col_name])
+    plt.plot(df[col_name].rolling(window=10, min_periods=1).mean())
     plt.xlabel('episode')
     plt.ylabel(col_name)
     plt.savefig(input_file + '_' + col_name + '.jpg')
